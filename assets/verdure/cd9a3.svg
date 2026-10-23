@@ -1,0 +1,13 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="23.4097" height="56.1832" viewBox="0 0 23.4097 56.1832" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Mini rail" clip-path="url(#clip0_0_8957)">
+<rect id="Rectangle" x="10.5343" y="0.000405037" width="1.75573" height="56.1832" rx="0.877863" fill="#E4E5E6"/>
+<rect id="Rectangle_2" x="10.5343" y="8.19379" width="1.75573" height="23.4097" rx="0.877863" fill="#6FD197"/>
+<circle id="Ellipse" cx="11.4122" cy="8.19379" r="3.07252" fill="white" stroke="#1A1B19" stroke-width="0.877863"/>
+<circle id="Ellipse_2" cx="11.4122" cy="31.6035" r="3.51145" fill="#6FD197" stroke="white" stroke-width="1.17048"/>
+</g>
+<defs>
+<clipPath id="clip0_0_8957">
+<rect width="23.4097" height="56.1832" fill="white"/>
+</clipPath>
+</defs>
+</svg>

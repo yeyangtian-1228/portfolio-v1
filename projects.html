@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>projects · yeyang dani tian</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Instrument+Sans:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/site.css?v=15">
+<style>
+  /* secondary gray on this page */
+  :root { --ink-muted: #6E6879; }
+  html, body { height: 100%; overflow: hidden; }
+  body { display: flex; flex-direction: column; }
+
+  .layout {
+    flex: 1; min-height: 0;
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    column-gap: 24px;
+  }
+
+  /* ---------- left column ---------- */
+  /* Section nav and project list share one type size (--side-size). */
+  .side { --side-size: 14px; display: flex; flex-direction: column; gap: 48px; min-height: 0; overflow-y: auto; padding-bottom: 32px; }
+
+  .sections {
+    position: relative;
+    padding: 10px 0 12px 40px;
+    list-style: none;
+  }
+
+  /* Fader: a volume-style slider beside the section names. The grey fill and the knob show
+     how far through the case study you are (the knob reaches a name as that section
+     starts); drag the knob to scrub, or tap a tick to spring to that section. */
+  .fader { position: absolute; left: 12px; top: 0; bottom: 0; width: 22px; touch-action: none; cursor: pointer; }
+  .fader-ticks i {
+    position: absolute; left: 0; width: 5px; height: 1.5px; border-radius: 1px;
+    background: #c9c7cf; transition: background .25s;
+  }
+  .fader-ticks i.major { width: 7px; left: -1px; background: #b4b1bb; }
+  .fader-ticks i.on { background: #6E6879; }
+  .fader-track {
+    position: absolute; left: 11px; width: 4px; border-radius: 2px;
+    background: #d3d6dc; box-shadow: inset 0 1px 1px rgba(0,0,0,.12);
+  }
+  .fader-fill {
+    position: absolute; left: 0; right: 0; top: 0; border-radius: 2px;
+    background: #6E6879;
+  }
+  .fader-knob {
+    position: absolute; left: 6px; width: 14px; height: 24px; margin-top: -12px; border-radius: 7px;
+    background: linear-gradient(160deg, #3a3a3c 0 45%, #1a1a1b 55% 100%);
+    box-shadow: 0 2px 5px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.18);
+    cursor: grab;
+  }
+  .fader-knob::after {
+    content: ""; position: absolute; left: 50%; top: 50%; width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px;
+    border-radius: 50%; background: #2c2c2e; box-shadow: inset 0 1px 1px rgba(0,0,0,.5), 0 .5px 0 rgba(255,255,255,.2);
+  }
+  .fader.is-dragging, .fader.is-dragging .fader-knob { cursor: grabbing; }
+  /* spring to a clicked section: overshoot, then settle */
+  .fader.is-springing .fader-knob { transition: top .65s cubic-bezier(.34, 1.4, .5, 1); }
+  .fader.is-springing .fader-fill { transition: height .65s cubic-bezier(.34, 1.4, .5, 1); }
+  .sections button {
+    display: block; padding: 6px 0;
+    font-size: var(--side-size); line-height: 1.35;
+    color: var(--ink-muted);
+    transition: color .3s;
+  }
+  .sections button:hover { color: var(--ink); }
+  .sections button[aria-current="true"] { color: var(--ink); }
+  .sections button:disabled { color: var(--ink-faint); opacity: .5; cursor: default; }
+
+  .project-list {
+    list-style: none; padding: 14px 10px 16px 20px; display: flex; flex-direction: column; gap: 18px;
+    background: var(--panel); border-radius: 0 12px 12px 0;
+  }
+  .project-list button { display: block; text-align: left; width: 100%; }
+  .project-list strong {
+    display: block; font-weight: 400; font-size: var(--side-size); line-height: 1.35;
+    color: var(--ink-muted); transition: color .3s;
+  }
+  .project-list span {
+    display: block; margin-top: 3px; font-size: 12px; line-height: 1.45;
+    color: var(--ink-faint); transition: color .3s;
+  }
+  .project-list button:hover strong,
+  .project-list button[aria-current="true"] strong { color: var(--ink); }
+  .project-list button:hover span,
+  .project-list button[aria-current="true"] span { color: var(--ink-muted); }
+
+  /* ---------- right: project viewer ---------- */
+  .viewer { position: relative; min-height: 0; background: var(--placeholder); }
+  .viewer iframe {
+    position: absolute; inset: 0; width: 100%; height: 100%; border: 0;
+    background: var(--bg);
+    transition: opacity .35s var(--ease);
+  }
+  .viewer iframe.is-loading { opacity: 0; }
+
+  @media (max-width: 900px) {
+    html, body { overflow: auto; height: auto; }
+    .layout { grid-template-columns: 1fr; row-gap: 24px; }
+    .side { overflow: visible; gap: 24px; padding: 0 16px; }
+    .side { --side-size: 16px; }
+    .sections { display: flex; flex-wrap: wrap; gap: 0 20px; padding: 8px 16px; border-radius: 12px; }
+    .fader { display: none; }
+    .sections button { padding: 6px 0; }
+    .project-list { flex-direction: row; gap: 20px; padding: 10px 16px; border-radius: 12px; }
+    .viewer { height: 80vh; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="site-nav" aria-label="Primary">
+  <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="projects.html" aria-current="page">Projects</a></li>
+    <li><a href="#" aria-disabled="true" title="coming soon">Other Work</a></li>
+    <li><a href="#" aria-disabled="true" title="coming soon">Contacts</a></li>
+    <li><a href="about.html">About Me</a></li>
+  </ul>
+</nav>
+
+<div class="layout">
+  <aside class="side">
+    <ul class="sections" id="sections" aria-label="Sections"></ul>
+    <ul class="project-list" id="project-list" aria-label="Projects"></ul>
+  </aside>
+
+  <main class="viewer">
+    <iframe id="viewer" title="Project case study"></iframe>
+  </main>
+</div>
+
+<script src="js/nav.js?v=12"></script>
+<script>
+  // Section anchors are y positions (px) in each project's page — Figma frame y minus the
+  // height taken out of the hero by tools/hero_shrink.js (Verdure 170, Clicket 130).
+  // null = the project has no such section yet (shown greyed out).
+  const PROJECTS = {
+    verdure: {
+      title: "Verdure",
+      blurb: "Modular indoor-planting system with FlexiSpot.",
+      src: "projects/verdure.html?v=6",
+      sections: { overview: 0, research: 2210, development: 8770, "final product": 14271, outcomes: 23063 }
+    },
+    clicket: {
+      title: "Clicket",
+      blurb: "Camera accessory, app and rental service for new photographers.",
+      src: "projects/clicket.html?v=6",
+      sections: { overview: 0, research: 2142, development: 4989, "final product": 5655, outcomes: 11969 }
+    }
+  };
+  const SPY_OFFSET = 0.3; // a section becomes current once it reaches 30% down the viewer
+
+  const iframe = document.getElementById("viewer");
+  const sectionList = document.getElementById("sections");
+  const projectList = document.getElementById("project-list");
+  let active = null, detachScroll = null;
+
+  const sectionNames = Object.keys(PROJECTS.verdure.sections);
+  sectionList.innerHTML = sectionNames.map(s => `<li><button type="button" data-section="${s}">${s[0].toUpperCase() + s.slice(1)}</button></li>`).join("");
+  sectionList.insertAdjacentHTML("beforeend", `<li class="fader" aria-hidden="true">
+      <span class="fader-ticks"></span><span class="fader-track"><span class="fader-fill"></span></span><span class="fader-knob"></span>
+    </li>`);
+  const fader = sectionList.querySelector(".fader");
+  const fTicks = fader.querySelector(".fader-ticks"), fTrack = fader.querySelector(".fader-track");
+  const fFill = fader.querySelector(".fader-fill"), fKnob = fader.querySelector(".fader-knob");
+  projectList.innerHTML = Object.entries(PROJECTS).map(([id, p]) => `
+    <li><button type="button" data-project="${id}">
+      <strong>${p.title}</strong><span>${p.blurb}</span>
+    </button></li>`).join("");
+
+  const zoomOf = win => {
+    const f = win.document.getElementById("frame");
+    if (!f) return 1;
+    const crop = Number(f.dataset.crop) || 0;
+    const frameW = Number(f.dataset.frameWidth) || 1420;
+    return parseFloat(f.style.zoom) || win.document.documentElement.clientWidth / (frameW - 2 * crop);
+  };
+
+  function markSection(name) {
+    sectionList.querySelectorAll("button").forEach(b => b.setAttribute("aria-current", b.dataset.section === name));
+  }
+
+  let spyPausedUntil = 0; // while a clicked section scrolls into view, keep its highlight
+
+  // ---------- fader ----------
+  // Stops: for each section that exists, the y of its name in the panel and the scroll
+  // position (in the case-study page) where that section's top reaches the top of the viewer.
+  function faderStops() {
+    const win = iframe.contentWindow, z = zoomOf(win);
+    const max = win.document.documentElement.scrollHeight - win.innerHeight;
+    return Object.entries(PROJECTS[active].sections).filter(([, y]) => y !== null).map(([name, y]) => {
+      const b = sectionList.querySelector(`[data-section="${name}"]`);
+      return { y: b.offsetTop + b.offsetHeight / 2, at: Math.min(max, y * z) };   // same spot a click on the name scrolls to
+    });
+  }
+  let knobY = 0;
+  function layoutFader() {
+    const stops = faderStops(), top = stops[0].y, bottom = stops.at(-1).y;
+    fTrack.style.top = top + "px"; fTrack.style.height = bottom - top + "px";
+    if (!fTicks.childElementCount || fTicks.dataset.span !== `${top},${bottom}`) {
+      fTicks.dataset.span = `${top},${bottom}`;
+      const marks = [];
+      stops.forEach((st, i) => {
+        marks.push([st.y, true]);
+      });
+      fTicks.innerHTML = marks.map(([y, major]) => `<i class="${major ? "major" : ""}" style="top:${y - 0.75}px"></i>`).join("");
+    }
+    return stops;
+  }
+  // Clicking a section name: the knob springs to that name, overshooting a little and
+  // settling (it ignores the page scroll until the smooth scroll there is done).
+  let faderLockUntil = 0;
+  function springKnob(name) {
+    const b = sectionList.querySelector(`[data-section="${name}"]`);
+    const y = b.offsetTop + b.offsetHeight / 2;
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) { setKnob(y); return; }
+    faderLockUntil = performance.now() + 1200;
+    fader.classList.add("is-springing");
+    setKnob(y, true);
+    clearTimeout(springKnob.t);
+    springKnob.t = setTimeout(() => fader.classList.remove("is-springing"), 1200);
+  }
+  function setKnob(y, force) {
+    if (!force && performance.now() < faderLockUntil) return;
+    knobY = y;
+    const top = parseFloat(fTrack.style.top) || 0;
+    fKnob.style.top = y + "px";
+    fFill.style.height = Math.max(0, y - top) + "px";
+    fTicks.querySelectorAll("i").forEach(t => t.classList.toggle("on", parseFloat(t.style.top) <= y));
+  }
+  function updateFader() {
+    const win = iframe.contentWindow;
+    if (!win?.document?.getElementById("frame")) return;
+    const stops = layoutFader(), sy = win.scrollY;
+    let y = stops[0].y;
+    for (let i = 0; i < stops.length; i++) {
+      const a = stops[i], b = stops[i + 1];
+      if (!b || sy < b.at) { y = b && b.at > a.at ? a.y + (b.y - a.y) * Math.max(0, Math.min(1, (sy - a.at) / (b.at - a.at))) : a.y; break; }
+    }
+    if (win.scrollY + win.innerHeight >= win.document.documentElement.scrollHeight - 2) y = stops.at(-1).y;
+    setKnob(y);
+  }
+  // knob y → scroll position (the inverse of the mapping above)
+  function scrollFromKnob(y) {
+    const stops = faderStops(), win = iframe.contentWindow;
+    y = Math.max(stops[0].y, Math.min(stops.at(-1).y, y));
+    for (let i = 0; i < stops.length - 1; i++) {
+      const a = stops[i], b = stops[i + 1];
+      if (y <= b.y) { win.scrollTo({ top: a.at + (b.at - a.at) * (y - a.y) / (b.y - a.y), behavior: "auto" }); return; }
+    }
+    win.scrollTo({ top: stops.at(-1).at, behavior: "auto" });
+  }
+  // Press on a tick (or anywhere on the bar) and let go: the knob springs to the nearest
+  // section and the case study scrolls there, same as clicking its name. Grab the knob,
+  // or press and move, to scrub freely instead.
+  let faderDrag = null;
+  const yIn = e => e.clientY - fader.getBoundingClientRect().top;
+  fader.addEventListener("pointerdown", e => {
+    if (e.button !== 0 || !attachedDoc) return;
+    e.preventDefault();
+    try { fader.setPointerCapture(e.pointerId); } catch {}
+    faderDrag = { id: e.pointerId, y0: yIn(e), scrubbing: !!e.target.closest(".fader-knob") };
+    if (faderDrag.scrubbing) { faderLockUntil = 0; fader.classList.remove("is-springing"); fader.classList.add("is-dragging"); spyPausedUntil = 0; }
+  });
+  fader.addEventListener("pointermove", e => {
+    if (!faderDrag || e.pointerId !== faderDrag.id) return;
+    if (!faderDrag.scrubbing && Math.abs(yIn(e) - faderDrag.y0) > 4) {
+      faderDrag.scrubbing = true; faderLockUntil = 0; fader.classList.remove("is-springing"); fader.classList.add("is-dragging"); spyPausedUntil = 0;
+    }
+    if (faderDrag.scrubbing) scrollFromKnob(yIn(e));
+  });
+  const faderUp = e => {
+    if (!faderDrag || e.pointerId !== faderDrag.id) return;
+    const d = faderDrag; faderDrag = null;
+    fader.classList.remove("is-dragging");
+    if (d.scrubbing || e.type === "pointercancel") return;
+    // a tap: nearest section
+    const y = yIn(e);
+    const names = Object.entries(PROJECTS[active].sections).filter(([, v]) => v !== null).map(([n]) => n);
+    const near = names.reduce((best, n) => {
+      const b = sectionList.querySelector(`[data-section="${n}"]`), c = b.offsetTop + b.offsetHeight / 2;
+      return Math.abs(c - y) < best.d ? { n, d: Math.abs(c - y) } : best;
+    }, { n: names[0], d: Infinity }).n;
+    sectionList.querySelector(`[data-section="${near}"]`).click();
+  };
+  fader.addEventListener("pointerup", faderUp);
+  fader.addEventListener("pointercancel", faderUp);
+  addEventListener("resize", () => updateFader());
+
+  function spy() {
+    updateFader();
+    if (performance.now() < spyPausedUntil) return;
+    const win = iframe.contentWindow;
+    const z = zoomOf(win);
+    const probe = win.scrollY + win.innerHeight * SPY_OFFSET;
+    let current = sectionNames[0];
+    const available = Object.entries(PROJECTS[active].sections).filter(([, y]) => y !== null);
+    for (const [name, y] of available) if (y * z <= probe) current = name;
+    // At the very bottom, the last section is current even if it is short.
+    if (win.scrollY + win.innerHeight >= win.document.documentElement.scrollHeight - 2) current = available.at(-1)[0];
+    markSection(current);
+  }
+
+  function openProject(id, { push = true } = {}) {
+    if (!PROJECTS[id]) id = "verdure";
+    if (id === active) return;
+    active = id;
+    projectList.querySelectorAll("button").forEach(b => b.setAttribute("aria-current", b.dataset.project === id));
+    sectionList.querySelectorAll("button").forEach(b => {
+      const missing = PROJECTS[id].sections[b.dataset.section] === null;
+      b.disabled = missing;
+      b.title = missing ? "coming soon" : "";
+    });
+    markSection(sectionNames[0]);
+    spyPausedUntil = 0;
+    iframe.classList.add("is-loading");
+    // replace() keeps iframe loads out of the session history, so Back switches projects
+    const win = iframe.contentWindow;
+    if (win && win.location.href !== "about:blank") win.location.replace(new URL(PROJECTS[id].src, location.href));
+    else iframe.src = PROJECTS[id].src;
+    waitForProject();
+    if (push) history.pushState({ id }, "", `?p=${id}`);
+  }
+
+  // Hook up as soon as the case study's DOM is parsed; the iframe "load" event
+  // waits for every image, which can take a long time on these pages.
+  let attachedDoc = null;
+  function attach() {
+    const win = iframe.contentWindow, doc = iframe.contentDocument;
+    if (!doc || doc === attachedDoc || !doc.getElementById("frame")) return false;
+    if (!win.location.pathname.endsWith(PROJECTS[active].src.split("?")[0])) return false;
+    detachScroll?.();
+    attachedDoc = doc;
+    const onScroll = () => spy();
+    win.addEventListener("scroll", onScroll, { passive: true });
+    detachScroll = () => win.removeEventListener("scroll", onScroll);
+    spy();
+    iframe.classList.remove("is-loading");
+    return true;
+  }
+  let poll = null;
+  function waitForProject() {
+    clearInterval(poll);
+    poll = setInterval(() => { if (attach()) clearInterval(poll); }, 100);
+  }
+  iframe.addEventListener("load", attach);
+
+  sectionList.addEventListener("click", e => {
+    const b = e.target.closest("button[data-section]");
+    if (!b) return;
+    const win = iframe.contentWindow;
+    const smooth = !matchMedia("(prefers-reduced-motion: reduce)").matches;
+    markSection(b.dataset.section);
+    springKnob(b.dataset.section);
+    spyPausedUntil = performance.now() + (smooth ? 1200 : 0);
+    win.scrollTo({ top: PROJECTS[active].sections[b.dataset.section] * zoomOf(win), behavior: smooth ? "smooth" : "auto" });
+  });
+
+  projectList.addEventListener("click", e => {
+    const b = e.target.closest("button[data-project]");
+    if (b) openProject(b.dataset.project);
+  });
+
+  addEventListener("popstate", () => openProject(new URLSearchParams(location.search).get("p"), { push: false }));
+  openProject(new URLSearchParams(location.search).get("p") || "verdure", { push: false });
+</script>
+</body>
+</html>
