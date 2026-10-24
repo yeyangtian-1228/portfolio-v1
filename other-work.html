@@ -27,7 +27,7 @@
   .thumb:focus-visible { outline: 2px solid var(--ink-muted); outline-offset: 4px; }
   .grid li:nth-child(even) .thumb:hover { transform: translateY(-4px) rotate(.6deg); }
   .thumb-img {
-    aspect-ratio: 4 / 3; border-radius: 10px; overflow: hidden;
+    aspect-ratio: 16 / 9; border-radius: 10px; overflow: hidden;
     background: #d9d9d6 center / cover no-repeat;
     display: grid; place-items: center; font: 12px "DM Mono", monospace; color: #9a9894;
   }
@@ -54,13 +54,13 @@
 <main class="work">
   <header class="work-head">
     <h1>Other work</h1>
-    <p>Smaller projects, studio work and experiments.</p>
+    <p>Earlier projects — products, services and a community.</p>
   </header>
   <ul class="grid" id="grid"></ul>
 </main>
 
 <script src="js/nav.js?v=12"></script>
-<script src="js/other-work.js?v=1"></script>
+<script src="js/other-work.js?v=2"></script>
 <script>
   const grid = document.getElementById("grid");
   grid.innerHTML = OTHER_WORK.map((w, i) => {
