@@ -114,7 +114,7 @@
     const page = document.querySelector(".page"), box = document.getElementById("slices");
     page.classList.add("has-slices");
     box.innerHTML = Array.from({ length: w.parts }, (_, i) =>
-      `<img src="assets/other-work/${n}/part-${String(i + 1).padStart(2, "0")}.jpg" alt="${i ? "" : w.title}" loading="${i < 2 ? "eager" : "lazy"}" decoding="async" width="1830" height="1800">`).join("");
+      `<img src="assets/other-work/${n}/part-${String(i + 1).padStart(2, "0")}.jpg?v=2" alt="${i ? "" : w.title}" loading="${i < 2 ? "eager" : "lazy"}" decoding="async" width="1830" height="1800">`).join("");
   }
   const link = (id, k) => {
     const a = document.getElementById(id), m = ((n - 1 + k + OTHER_WORK.length) % OTHER_WORK.length) + 1;
