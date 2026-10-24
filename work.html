@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>other work · yeyang dani tian</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=DM+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/site.css?v=15">
+<style>
+  /* One Other Work project (work.html?p=1…6), filled from js/other-work.js. The image slots
+     show grey placeholders until assets/other-work/<n>/hero.jpg, 1.jpg … 4.jpg exist. */
+  :root { --ink-muted: #6E6879; }
+  .page { max-width: 1040px; margin: 0 auto; padding: 16px clamp(16px, 4vw, 48px) 80px; }
+  .back { display: inline-block; font-size: 14px; color: var(--ink-muted); margin-bottom: 28px; transition: color .3s; }
+  .back:hover { color: var(--ink); }
+  .num { font: 12px "DM Mono", monospace; color: #d2412f; }
+  h1 { margin-top: 6px; font: 500 40px/1.15 "Geist", sans-serif; }
+  .intro { margin-top: 14px; max-width: 640px; font-size: 18px; line-height: 1.5; color: var(--ink-muted); }
+  .meta { display: flex; flex-wrap: wrap; gap: 12px 48px; margin: 28px 0 36px; padding: 16px 0; border-top: 1px solid #e3e1e6; border-bottom: 1px solid #e3e1e6; }
+  .meta dt { font: 11px "DM Mono", monospace; color: #9a9894; text-transform: uppercase; letter-spacing: .04em; }
+  .meta dd { margin-top: 4px; font-size: 14px; }
+  .slot {
+    border-radius: 4px; background: #e6e5e2 center / cover no-repeat;
+    display: grid; place-items: center; font: 12px "DM Mono", monospace; color: #9a9894;
+  }
+  .hero { aspect-ratio: 16 / 9; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+  .pair .slot { aspect-ratio: 4 / 3; }
+  .text { display: grid; grid-template-columns: 200px 1fr; gap: 24px; margin: 56px 0; }
+  .text h2 { font: 500 18px/1.3 "Geist", sans-serif; }
+  .text p { font-size: 15px; line-height: 1.65; color: var(--ink-muted); }
+  .wide { aspect-ratio: 21 / 9; }
+  .pager { display: flex; justify-content: space-between; margin-top: 64px; padding-top: 20px; border-top: 1px solid #e3e1e6; font-size: 14px; }
+  .pager a { color: var(--ink-muted); transition: color .3s; }
+  .pager a:hover { color: var(--ink); }
+  .pager span { display: block; font: 11px "DM Mono", monospace; color: #9a9894; }
+  @media (max-width: 700px) { .pair { grid-template-columns: 1fr; } .text { grid-template-columns: 1fr; gap: 8px; } h1 { font-size: 30px; } }
+</style>
+</head>
+<body>
+
+<nav class="site-nav" aria-label="Primary">
+  <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="projects.html">Projects</a></li>
+    <li><a href="other-work.html" aria-current="page">Other Work</a></li>
+    <li><a href="#" aria-disabled="true" title="coming soon">Contacts</a></li>
+    <li><a href="about.html">About Me</a></li>
+  </ul>
+</nav>
+
+<main class="page">
+  <a class="back" href="other-work.html">← Other work</a>
+  <p class="num" id="num"></p>
+  <h1 id="title"></h1>
+  <p class="intro" id="intro"></p>
+  <dl class="meta">
+    <div><dt>Year</dt><dd id="year"></dd></div>
+    <div><dt>Role</dt><dd>Role</dd></div>
+    <div><dt>Focus</dt><dd id="tags"></dd></div>
+    <div><dt>Tools</dt><dd>Tools</dd></div>
+  </dl>
+
+  <div class="slot hero" data-img="hero">hero image</div>
+  <section class="text">
+    <h2>Context</h2>
+    <p>Placeholder — what the project was, who it was for, and the question it set out to answer.</p>
+  </section>
+  <div class="pair"><div class="slot" data-img="1">image</div><div class="slot" data-img="2">image</div></div>
+  <section class="text">
+    <h2>Process</h2>
+    <p>Placeholder — how it was made: research, sketches, prototypes, the decisions that shaped it.</p>
+  </section>
+  <div class="slot wide" data-img="3">image</div>
+  <section class="text">
+    <h2>Outcome</h2>
+    <p>Placeholder — what came out of it and what I learned.</p>
+  </section>
+  <div class="slot hero" data-img="4">image</div>
+
+  <nav class="pager" aria-label="More work">
+    <a id="prev" href="#"><span>Previous</span><b></b></a>
+    <a id="next" href="#" style="text-align:right"><span>Next</span><b></b></a>
+  </nav>
+</main>
+
+<script src="js/nav.js?v=12"></script>
+<script src="js/other-work.js?v=1"></script>
+<script>
+  const n = Math.min(OTHER_WORK.length, Math.max(1, parseInt(new URLSearchParams(location.search).get("p")) || 1));
+  const w = OTHER_WORK[n - 1];
+  document.title = `${w.title} · yeyang dani tian`;
+  document.getElementById("num").textContent = String(n).padStart(2, "0");
+  document.getElementById("title").textContent = w.title;
+  document.getElementById("intro").textContent = w.sub;
+  document.getElementById("year").textContent = w.year;
+  document.getElementById("tags").textContent = w.tags.join(", ");
+  document.querySelectorAll("[data-img]").forEach(box => {
+    const src = `assets/other-work/${n}/${box.dataset.img}.jpg`, img = new Image();
+    img.onload = () => { box.style.backgroundImage = `url("${src}")`; box.textContent = ""; };
+    img.src = src;
+  });
+  const link = (id, k) => {
+    const a = document.getElementById(id), m = ((n - 1 + k + OTHER_WORK.length) % OTHER_WORK.length) + 1;
+    a.href = `work.html?p=${m}`; a.querySelector("b").textContent = OTHER_WORK[m - 1].title;
+  };
+  link("prev", -1); link("next", 1);
+</script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>other work · yeyang dani tian</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=DM+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/site.css?v=15">
+<style>
+  /* Other Work: six project thumbnails in the home cards' style (paper card, image well,
+     red number, title, grey intro); each opens work.html?p=N. Content lives in js/other-work.js. */
+  :root { --ink-muted: #6E6879; }
+  .work { max-width: 1120px; margin: 0 auto; padding: 24px clamp(16px, 4vw, 48px) 80px; }
+  .work-head { display: flex; align-items: baseline; justify-content: space-between; gap: 24px; margin-bottom: 32px; }
+  .work-head h1 { font: 500 28px/1.2 "Geist", sans-serif; }
+  .work-head p { font-size: 14px; color: var(--ink-muted); }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; list-style: none; padding: 0; }
+  .thumb {
+    display: block; background: #f0f0ee; border-radius: 4px; padding: 10px 10px 16px;
+    box-shadow: 2px 5px 10px rgba(0,0,0,.10);
+    transition: transform .35s cubic-bezier(.3,1.4,.5,1), box-shadow .35s;
+  }
+  .thumb:hover, .thumb:focus-visible { transform: translateY(-4px) rotate(-.6deg); box-shadow: 4px 12px 20px rgba(0,0,0,.14); }
+  .thumb:focus-visible { outline: 2px solid var(--ink-muted); outline-offset: 4px; }
+  .grid li:nth-child(even) .thumb:hover { transform: translateY(-4px) rotate(.6deg); }
+  .thumb-img {
+    aspect-ratio: 4 / 3; border-radius: 2px; overflow: hidden;
+    background: #d9d9d6 center / cover no-repeat;
+    display: grid; place-items: center; font: 12px "DM Mono", monospace; color: #9a9894;
+  }
+  .thumb-num { display: block; margin-top: 12px; font: 11px/1.3 "DM Mono", monospace; color: #d2412f; }
+  .thumb-title { display: block; margin-top: 2px; font-size: 18px; font-weight: 500; }
+  .thumb-sub { display: block; margin-top: 4px; font-size: 13px; line-height: 1.4; color: var(--ink-muted); }
+  .thumb-meta { display: block; margin-top: 10px; font-size: 11.5px; color: #9a9894; }
+  @media (max-width: 900px) { .grid { grid-template-columns: repeat(2, 1fr); gap: 20px; } }
+  @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } .work-head { flex-direction: column; gap: 6px; } }
+</style>
+</head>
+<body>
+
+<nav class="site-nav" aria-label="Primary">
+  <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="projects.html">Projects</a></li>
+    <li><a href="other-work.html" aria-current="page">Other Work</a></li>
+    <li><a href="#" aria-disabled="true" title="coming soon">Contacts</a></li>
+    <li><a href="about.html">About Me</a></li>
+  </ul>
+</nav>
+
+<main class="work">
+  <header class="work-head">
+    <h1>Other work</h1>
+    <p>Smaller projects, studio work and experiments.</p>
+  </header>
+  <ul class="grid" id="grid"></ul>
+</main>
+
+<script src="js/nav.js?v=12"></script>
+<script src="js/other-work.js?v=1"></script>
+<script>
+  const grid = document.getElementById("grid");
+  grid.innerHTML = OTHER_WORK.map((w, i) => {
+    const n = i + 1, thumb = `assets/other-work/${n}/thumb.jpg`;
+    return `<li><a class="thumb" href="work.html?p=${n}">
+      <span class="thumb-img" data-src="${thumb}">image</span>
+      <span class="thumb-num">${String(n).padStart(2, "0")}</span>
+      <span class="thumb-title">${w.title}</span>
+      <span class="thumb-sub">${w.sub}</span>
+      <span class="thumb-meta">${w.year} · ${w.tags.join(" · ")}</span>
+    </a></li>`;
+  }).join("");
+  // show a thumbnail once its image exists; until then the grey box says "image"
+  grid.querySelectorAll(".thumb-img").forEach(box => {
+    const img = new Image();
+    img.onload = () => { box.style.backgroundImage = `url("${box.dataset.src}")`; box.textContent = ""; };
+    img.src = box.dataset.src;
+  });
+</script>
+</body>
+</html>
