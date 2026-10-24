@@ -17,6 +17,7 @@
   .work-head { display: flex; align-items: baseline; justify-content: space-between; gap: 24px; margin-bottom: 32px; }
   .work-head h1 { font: 500 28px/1.2 "Geist", sans-serif; }
   .work-head p { font-size: 14px; color: var(--ink-muted); }
+  .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; list-style: none; padding: 0; }
   .thumb {
     display: block; background: #f0f0ee; border-radius: 16px; padding: 8px 8px 14px;
@@ -52,10 +53,7 @@
 </nav>
 
 <main class="work">
-  <header class="work-head">
-    <h1>Other work</h1>
-    <p>Earlier projects — products, services and a community.</p>
-  </header>
+  <h1 class="visually-hidden">Other work</h1>
   <ul class="grid" id="grid"></ul>
 </main>
 
