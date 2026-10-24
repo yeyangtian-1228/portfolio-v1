@@ -212,11 +212,17 @@
   const root = frame.querySelector("[data-node-id]");
   let heroTop = hero;
   while (heroTop.parentElement && heroTop.parentElement !== root) heroTop = heroTop.parentElement;
+  // Groups exported as `display: contents` have no box of their own, so a translate on
+  // them does nothing: move their children instead (all the way down).
+  const shift = el => {
+    if (getComputedStyle(el).display === "contents") { [...el.children].forEach(shift); return; }
+    el.style.translate = `0 ${-CUT}px`;
+  };
   [...root.children].forEach(el => {
     if (el === heroTop) return;
     const top = el.offsetTop, h = el.offsetHeight;
     if (h > 0 && top + h <= FROM) return;             // wholly inside the hero band: leave it
-    el.style.translate = `0 ${-CUT}px`;
+    shift(el);
   });
   // Pages with an inserted block are shown as several clipped windows onto the frame:
   // the first window loses CUT px of height and the later ones move up with the content.
