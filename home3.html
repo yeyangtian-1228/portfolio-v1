@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<title>yeyang dani tian</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Geist+Mono:wght@500&family=Instrument+Sans:ital,wght@0,500;0,600;1,600&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/site.css?v=15">
+<style>
+  /* Home 3 · cassette (Figma: 2026 babies › home3 › "v3 · cassette · about").
+     Three oval keys sit above a clear cassette; each key loads a different tape and the
+     reels never stop. This first pass builds the About tape; keys 2 and 3 press and spring
+     back until their tapes exist. The cassette is three.js (js/home3-cassette.js); the
+     SVG under it is the fallback if WebGL or the module doesn't load. */
+  :root { --ink-muted: #6E6879; }
+  html, body { min-height: 100%; }
+  body { display: flex; flex-direction: column; min-height: 100vh; }
+
+  .deck {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    gap: clamp(40px, 7.3vw, 104px); padding: 24px 24px 40px;
+  }
+  .tape-col { flex: 0 1 560px; min-width: 0; }
+
+  /* ---------- oval keys ----------
+     A puck seen from slightly above: the top face is the ellipse, its side is a hard
+     shadow underneath. Pressed, it sinks until only a sliver of side shows. */
+  .keys { display: flex; gap: 10px; margin: 0 0 20px 6px; }
+  .key {
+    --side: #bdb5a8;
+    width: 46px; height: 24px; border-radius: 50%;
+    background: radial-gradient(ellipse at 50% 30%, #fff 0 45%, #e9e5de 100%);
+    box-shadow: 0 9px 0 var(--side), 0 12px 6px rgba(0,0,0,.16), inset 0 -2px 3px rgba(0,0,0,.08);
+    transform: translateY(0);
+    transition: transform .3s cubic-bezier(.3, 1.7, .5, 1), box-shadow .3s cubic-bezier(.3, 1.7, .5, 1);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .key:hover { transform: translateY(-2px); box-shadow: 0 11px 0 var(--side), 0 14px 7px rgba(0,0,0,.16), inset 0 -2px 3px rgba(0,0,0,.08); }
+  .key[aria-pressed="true"], .key.is-tapping {
+    transform: translateY(7px);
+    box-shadow: 0 2px 0 var(--side), 0 4px 3px rgba(0,0,0,.18), inset 0 -2px 3px rgba(0,0,0,.12);
+    transition-duration: .08s; transition-timing-function: ease-in;
+  }
+  .key[aria-pressed="true"] { --side: #8e2516; background: radial-gradient(ellipse at 50% 30%, #f07a63 0 30%, #c93a28 100%); }
+  .key:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+
+  /* ---------- cassette ---------- */
+  .tape {
+    position: relative; width: 100%; aspect-ratio: 560 / 356;
+  }
+  .tape-fallback { position: absolute; inset: 0; width: 100%; height: 100%; transition: opacity .4s; }
+  /* the WebGL canvas is larger than the tape so it can tilt without clipping */
+  .tape canvas {
+    position: absolute; left: -14.2857%; top: -22.4719%; width: 128.5714%; height: 144.9438%;
+    opacity: 0; transition: opacity .5s;
+  }
+  .tape.is-3d canvas { opacity: 1; }
+  .tape.is-3d .tape-fallback { opacity: 0; }
+  .tape::after {   /* soft floor shadow */
+    content: ""; position: absolute; left: 8%; right: 8%; bottom: -26px; height: 30px; z-index: -1;
+    background: radial-gradient(ellipse at 50% 50%, rgba(30,34,42,.22), rgba(30,34,42,0) 70%);
+    filter: blur(6px);
+  }
+
+  /* ---------- text ---------- */
+  .copy { flex: 0 1 480px; min-width: 0; }
+  .copy h1 { font: 600 32px/1.2 "Instrument Sans", system-ui, sans-serif; color: var(--ink-muted); margin-bottom: 30px; }
+  .copy p { font-size: 24px; line-height: 1.4; color: var(--ink); }
+  /* the name, set in Instrument Serif italic (a touch larger: its x-height is smaller than Geist's) */
+  .copy .name { font: italic 400 1.25em/1 "Instrument Serif", Georgia, serif; letter-spacing: .005em; }
+  .links { display: flex; gap: 24px; margin-top: 16px; list-style: none; padding: 0; font-size: 18px; }
+  .links a { color: var(--ink-muted); cursor: pointer; transition: color .2s; }
+  .links a:hover { color: var(--ink); }
+
+  footer {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 0 24px 18px;   /* sits close to the bottom edge */
+  }
+  .sig { font-size: 14px; line-height: 1.3; color: var(--ink-muted); }   /* same size as the nav */
+  .year { font-size: 14px; line-height: 1.3; color: var(--ink-muted); }
+
+  @media (max-width: 900px) {
+    .deck { flex-direction: column; align-items: stretch; gap: 40px; }
+    .tape-col, .copy { width: 100%; max-width: 560px; margin: 0 auto; }
+    .copy p { font-size: 20px; }
+    .links { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="site-nav" aria-label="Primary">
+  <ul>
+    <li><a href="index.html" aria-current="page">Home</a></li>
+    <li><a href="projects.html">Projects</a></li>
+    <li><a href="other-work.html">Other Work</a></li>
+    <li><a href="#" aria-disabled="true" title="coming soon">Contacts</a></li>
+    <li><a href="about.html">About Me</a></li>
+  </ul>
+</nav>
+
+<main class="deck">
+  <div class="tape-col">
+    <div class="keys" role="group" aria-label="Tapes">
+      <button type="button" class="key" aria-pressed="true" aria-label="About"></button>
+      <button type="button" class="key" aria-pressed="false" aria-label="Works (coming soon)"></button>
+      <button type="button" class="key" aria-pressed="false" aria-label="Other work (coming soon)"></button>
+    </div>
+    <div class="tape" id="tape">
+      <img class="tape-fallback" src="assets/home3/cassette-about.svg" alt="A clear cassette labelled About me, side A, vol. 01">
+      <canvas aria-hidden="true"></canvas>
+    </div>
+  </div>
+
+  <section class="copy" aria-labelledby="about-h">
+    <h1 id="about-h">About</h1>
+    <p>hi! I’m <span class="name">Dani Yeyang (yeah-young) Tian</span>, a product designer who transforms complex, real-world systems into clear and intuitive experiences. currently @ UMich MSI.</p>
+    <!-- TODO: real link for CV (Linkedin / Email are the same as on Home) -->
+    <ul class="links">
+      <li><a title="coming soon">CV</a></li>
+      <li><a href="https://www.linkedin.com/in/dani-yeyang-tian-39b5b9410/" target="_blank" rel="noopener">Linkedin</a></li>
+      <li><a href="mailto:yeyangtian873@gmail.com">Email</a></li>
+    </ul>
+  </section>
+</main>
+
+<footer>
+  <span class="sig">thanks to Claude Code &amp; GitHub</span>
+  <span class="year">© 2026</span>
+</footer>
+
+<script src="js/nav.js?v=12"></script>
+<script>
+  // Keys: 1 is About (this tape). 2 and 3 press and spring back until their tapes are built.
+  document.querySelectorAll(".key").forEach((k, i) => k.addEventListener("click", () => {
+    if (i === 0) return;
+    k.classList.add("is-tapping");
+    setTimeout(() => k.classList.remove("is-tapping"), 160);
+  }));
+</script>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module" src="js/home3-cassette.js?v=20"></script>
+</body>
+</html>
