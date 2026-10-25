@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="80 215 960 960">
+  <style>path { fill: #111; } @media (prefers-color-scheme: dark) { path { fill: #f2f2f2; } }</style>
+  <!-- cracked egg: the lifted, tilted top of the shell and the bottom half -->
+  <path d="M294 373H394L410 462 525 448 551 554 667 536 697 646 817 629C860 520 852 382 760 300 705 252 640 234 560 234 440 236 352 298 294 373Z"/>
+  <path d="M248 808L320 714 386 750 481 638 576 697 635 622 740 705 818 656C865 725 878 790 874 850 865 1000 740 1155 562 1155 380 1155 280 990 248 808Z"/>
+</svg>
