@@ -179,15 +179,17 @@
   .pocket-back, .pocket-front, .pocket-hit { position: absolute; left: 140px; width: 240px; border-radius: 26px; }
   .pocket-back {
     top: 280px; height: 230px; z-index: 1;
-    background: linear-gradient(#e3e4e7, #d5d7db);
+    --t: var(--tint, #dcdee2);
+    background: linear-gradient(color-mix(in srgb, var(--t), #fff 14%), color-mix(in srgb, var(--t), #000 6%));
     box-shadow: inset 0 1px 0 rgba(255,255,255,.7), 0 0 0 1px rgba(0,0,0,.07), 0 16px 36px rgba(0,0,0,.11), 0 2px 5px rgba(0,0,0,.08);
   }
-  /* Front with a thumb notch dipped into its top edge: a light, see-through frost at
-     rest (the pieces inside read clearly), turning solid while the pocket is open. */
+  /* Back: the project's signature colour (--tint), cool grey for placeholders.
+     Front: translucent white with a thumb notch dipped into its top edge, frosting
+     over a little more (and tipping open) while the pocket is open. */
   .pocket-front {
     top: 300px; height: 210px; z-index: 20; pointer-events: none;
-    background: linear-gradient(rgba(255,255,255,.3), rgba(234,236,240,.5));
-    -webkit-backdrop-filter: blur(2.5px); backdrop-filter: blur(2.5px);
+    background: linear-gradient(rgba(255,255,255,.5), rgba(255,255,255,.62));
+    -webkit-backdrop-filter: blur(5px) saturate(1.1); backdrop-filter: blur(5px) saturate(1.1);
     transform-origin: 50% 100%;   /* hinged at the bottom, so it tips open toward you */
     transition: background .4s var(--ease), -webkit-backdrop-filter .4s var(--ease), backdrop-filter .4s var(--ease),
                 transform .55s cubic-bezier(.3, 1.35, .5, 1);
@@ -197,8 +199,8 @@
   }
   .pocket.is-open .pocket-front {
     transform: perspective(700px) rotateX(16deg);
-    background: linear-gradient(#f2f3f5, #e2e4e8);
-    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    background: linear-gradient(rgba(255,255,255,.74), rgba(255,255,255,.84));
+    -webkit-backdrop-filter: blur(12px) saturate(1.1); backdrop-filter: blur(12px) saturate(1.1);
   }
   .pocket-hit { top: 200px; height: 310px; z-index: 25; cursor: pointer; }
   .pocket-hit:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
@@ -209,7 +211,7 @@
     display: block; width: 100%;
     transition: transform .35s cubic-bezier(.3, 1.4, .5, 1), box-shadow .35s;
   }
-  .pocket.is-open .pi:not(.pi-blank) { cursor: pointer; }
+  .pocket.is-open button.pi { cursor: pointer; }   /* only pieces that open something */
   .pocket.is-open .pi:hover, .pocket.is-open .pi:focus-visible { z-index: 60 !important; }
   .pocket.is-open .pi:hover .pi-inner,
   .pocket.is-open .pi:focus-visible .pi-inner { transform: rotate(var(--unrot)) scale(1.08); }
@@ -301,6 +303,7 @@
     verdure: {
       title: "Verdure",
       blurb: "Modular indoor-planting system with FlexiSpot.",
+      color: "#6fd197",   // signature colour (the case study's green): the pocket's back
       src: "projects/verdure.html?v=7",
       sections: { overview: 0, research: 2210, development: 8770, "final product": 14271, outcomes: 23063 },
       // pieces in the pocket: photo (w = width in px, ar = aspect ratio), sticker, tag
@@ -316,6 +319,7 @@
     clicket: {
       title: "Clicket",
       blurb: "Camera accessory, app and rental service for new photographers.",
+      color: "#ff6f6f",   // the shutter-button coral
       src: "projects/clicket.html?v=7",
       sections: { overview: 0, research: 2142, development: 4989, "final product": 5655, outcomes: 11969 },
       pocket: [
@@ -332,7 +336,9 @@
   const POCKETS = [
     { id: "verdure" },
     { id: "clicket" },
-    { title: "Coming soon", pieces: [{ blank: "#f3f4f6", w: 150, ar: 1.35 }, { blank: "#eceef1", w: 120, ar: .8 }, { blank: "#f1f2f4", w: 150, ar: 1.5 }] },
+    // case study not up yet: named, tinted (the purple from its card on Home), not clickable
+    { title: "Microsoft Fabric", color: "#8a6cc0",
+      pieces: [{ blank: "#f3f4f6", w: 150, ar: 1.35 }, { tag: "Client project · AI discovery", w: 150 }, { blank: "#f1f2f4", w: 150, ar: 1.5 }] },
     { title: "Coming soon", pieces: [{ blank: "#eef0f3", w: 140, ar: 1.4 }, { blank: "#f3f4f6", w: 120, ar: .85 }, { blank: "#f0f1f3", w: 150, ar: 1.3 }] }
   ];
   const FIRST = POCKETS[0].id;   // scrolling down on the overview goes into this one
@@ -613,7 +619,9 @@
     function make(def, n) {
       const proj = PROJECTS[def.id], title = proj ? proj.title : def.title;
       const col = document.createElement("div");
-      col.className = "pocket-col" + (proj ? "" : " is-soon");
+      const tint = (proj || def).color;
+      col.className = "pocket-col" + (proj || tint ? "" : " is-soon");
+      if (tint) col.style.setProperty("--tint", tint);
       col.innerHTML = `<div class="pocket-wrap"><div class="pocket">
           <div class="pocket-back"></div><div class="pocket-front"></div>
           <button type="button" class="pocket-hit" aria-expanded="false" aria-label="Open ${title}"></button>
@@ -635,7 +643,7 @@
         if (it.blank) node.style.setProperty("--paper", it.blank);
         node.innerHTML = `<span class="pi-inner">${
           it.photo || it.sticker ? `<img src="${it.photo || it.sticker}" alt="" draggable="false">` :
-          it.tag ? `<b>${title}</b><small>${it.tag}</small><i>Case study →</i>` : ""}</span>`;
+          it.tag ? `<b>${title}</b><small>${it.tag}</small><i>${proj ? "Case study →" : "Coming up"}</i>` : ""}</span>`;
         const h = it.photo ? w / it.ar + 10 : it.sticker ? w : it.tag ? 100 : w / it.ar;
         // Tucked: blown up to nearly fill the pocket's width, packed in with only small
         // offsets, the top ~35% standing above the front's edge and the rest down inside.
