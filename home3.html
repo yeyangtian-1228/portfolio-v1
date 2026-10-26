@@ -11,9 +11,9 @@
 <link rel="stylesheet" href="css/site.css?v=15">
 <style>
   /* Home 3 · cassette (Figma: 2026 babies › home3 › "v3 · cassette · about").
-     Three oval keys sit above a clear cassette; each key loads a different tape and the
+     Three transport keys sit above a clear cassette; each key loads a different tape and the
      reels never stop. This first pass builds the About tape; keys 2 and 3 press and spring
-     back until their tapes exist. The cassette is three.js (js/home3-cassette.js); the
+     back until their tapes exist. (All three tapes exist now.) The cassette is three.js (js/home3-cassette.js); the
      SVG under it is the fallback if WebGL or the module doesn't load. */
   :root { --ink-muted: #6E6879; }
   html, body { min-height: 100%; }
@@ -25,55 +25,125 @@
   }
   .tape-col { flex: 0 1 560px; min-width: 0; }
 
-  /* ---------- oval keys ----------
-     A puck seen from slightly above: the top face is the ellipse, its side is a hard
-     shadow underneath. Pressed, it sinks until only a sliver of side shows. */
-  .keys { display: flex; gap: 10px; margin: 0 0 20px 6px; }
+  /* ---------- transport keys ----------
+     Piano keys like a cassette deck's, side by side, each a pale top face with a symbol and
+     label over a front face, casting a soft shadow. --s is how much front shows: up 12px,
+     hovered 14px; the latched key sinks (4px), its shadow tightens and its label turns red. */
+  .keys { display: inline-flex; gap: 5px; margin: 0 0 18px 6px; }
   .key {
-    --side: #bdb5a8;
-    width: 46px; height: 24px; border-radius: 50%;
-    background: radial-gradient(ellipse at 50% 30%, #fff 0 45%, #e9e5de 100%);
-    box-shadow: 0 9px 0 var(--side), 0 12px 6px rgba(0,0,0,.16), inset 0 -2px 3px rgba(0,0,0,.08);
-    transform: translateY(0);
-    transition: transform .3s cubic-bezier(.3, 1.7, .5, 1), box-shadow .3s cubic-bezier(.3, 1.7, .5, 1);
+    --s: 12px;
+    position: relative; width: 66px; height: 48px;
     -webkit-tap-highlight-color: transparent;
   }
-  .key:hover { transform: translateY(-2px); box-shadow: 0 11px 0 var(--side), 0 14px 7px rgba(0,0,0,.16), inset 0 -2px 3px rgba(0,0,0,.08); }
-  .key[aria-pressed="true"], .key.is-tapping {
-    transform: translateY(7px);
-    box-shadow: 0 2px 0 var(--side), 0 4px 3px rgba(0,0,0,.18), inset 0 -2px 3px rgba(0,0,0,.12);
-    transition-duration: .08s; transition-timing-function: ease-in;
+  .key::before {   /* soft shadow on the surface, wider and lighter the higher the key stands */
+    content: ""; position: absolute; left: 3px; right: 3px; bottom: -3px; height: calc(var(--s) + 6px);
+    border-radius: 4px; background: rgba(24, 28, 36, .22); filter: blur(calc(var(--s) * .45 + 1px));
+    transform: translateY(calc(var(--s) * .25));
+    transition: height .3s cubic-bezier(.3, 1.6, .5, 1), filter .3s, transform .3s;
   }
-  .key[aria-pressed="true"] { --side: #8e2516; background: radial-gradient(ellipse at 50% 30%, #f07a63 0 30%, #c93a28 100%); }
-  .key:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+  .key-side {   /* front face */
+    position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--s) + 4px);
+    border-radius: 0 0 3px 3px;
+    background: linear-gradient(#cbced3, #a9adb4);
+    box-shadow: inset 0 -1px 0 rgba(0,0,0,.18), inset 1px 0 0 rgba(255,255,255,.25), inset -1px 0 0 rgba(0,0,0,.08);
+    transition: height .3s cubic-bezier(.3, 1.6, .5, 1);
+  }
+  .key-cap {    /* top face */
+    position: absolute; left: 0; right: 0; bottom: var(--s); height: 32px; border-radius: 3px 3px 2px 2px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    background: linear-gradient(#fafbfc, #e3e5e9);
+    box-shadow: inset 0 1px 0 #fff, inset 0 -1px 0 rgba(0,0,0,.08), 0 1px 0 rgba(0,0,0,.12);
+    font: 500 8.5px/1 "Geist Mono", ui-monospace, monospace; letter-spacing: .1em; color: #666a72;
+    transition: bottom .3s cubic-bezier(.3, 1.6, .5, 1), color .2s, background .2s;
+  }
+  .key-cap svg { width: 12px; height: 9px; fill: currentColor; }
+  .key:hover { --s: 14px; }
+  .key[aria-pressed="true"], .key.is-tapping { --s: 4px; }
+  .key[aria-pressed="true"] .key-side, .key[aria-pressed="true"] .key-cap,
+  .key.is-tapping .key-side, .key.is-tapping .key-cap { transition-duration: .09s; transition-timing-function: ease-in; }
+  .key[aria-pressed="true"] .key-cap { color: var(--red, #d2412f); background: linear-gradient(#eceef1, #d7dade); }
+  .key:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; border-radius: 4px; }
 
   /* ---------- cassette ---------- */
   .tape {
     position: relative; width: 100%; aspect-ratio: 560 / 356;
   }
-  .tape-fallback { position: absolute; inset: 0; width: 100%; height: 100%; transition: opacity .4s; }
+  /* the flat SVG only shows if the 3D cassette can't load (no WebGL, script blocked or slow);
+     while it loads the space stays empty and the 3D fades in */
+  .tape-fallback { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; transition: opacity .4s; }
+  .tape.no-3d .tape-fallback { opacity: 1; }
+  .tape.is-3d .tape-fallback { opacity: 0; }   /* 3D arrived after all: it wins */
   /* the WebGL canvas is larger than the tape so it can tilt without clipping */
   .tape canvas {
     position: absolute; left: -14.2857%; top: -22.4719%; width: 128.5714%; height: 144.9438%;
     opacity: 0; transition: opacity .5s;
+    pointer-events: none;   /* it overhangs the keys above the tape; let clicks through to them */
   }
   .tape.is-3d canvas { opacity: 1; }
-  .tape.is-3d .tape-fallback { opacity: 0; }
   .tape::after {   /* soft floor shadow */
     content: ""; position: absolute; left: 8%; right: 8%; bottom: -26px; height: 30px; z-index: -1;
     background: radial-gradient(ellipse at 50% 50%, rgba(30,34,42,.22), rgba(30,34,42,0) 70%);
     filter: blur(6px);
   }
 
-  /* ---------- text ---------- */
-  .copy { flex: 0 1 480px; min-width: 0; }
-  .copy h1 { font: 600 32px/1.2 "Instrument Sans", system-ui, sans-serif; color: var(--ink-muted); margin-bottom: 30px; }
+  /* ---------- right side: one panel per tape ---------- */
+  .panels { flex: 0 1 480px; min-width: 0; display: grid; }
+  .panel { grid-area: 1 / 1; align-self: center; min-width: 0; transition: opacity .35s var(--ease), transform .45s var(--ease), visibility 0s; }
+  .panel[hidden] { display: block; visibility: hidden; opacity: 0; transform: translateY(10px); pointer-events: none; transition: opacity .2s, transform .2s, visibility 0s .2s; }
+
+  /* ---------- 1 · about ---------- */
   .copy p { font-size: 24px; line-height: 1.4; color: var(--ink); }
   /* the name, set in Instrument Serif italic (a touch larger: its x-height is smaller than Geist's) */
   .copy .name { font: italic 400 1.25em/1 "Instrument Serif", Georgia, serif; letter-spacing: .005em; }
   .links { display: flex; gap: 24px; margin-top: 16px; list-style: none; padding: 0; font-size: 18px; }
   .links a { color: var(--ink-muted); cursor: pointer; transition: color .2s; }
   .links a:hover { color: var(--ink); }
+
+  /* ---------- 2 · works: one music-player tile per project, side by side ----------
+     A tall cover (the app on a photo), the title, the project's keywords,
+     a progress bar in its colour and the track number. Hover: the tile lifts, the bar
+     plays to the end and a little equaliser starts by the title. */
+  .tracks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; list-style: none; padding: 0; }
+  .track {
+    --accent: #6E6879;
+    position: relative; display: flex; flex-direction: column; height: 100%;
+    padding: 8px 8px 10px; border-radius: 16px;
+    background: #fff; color: var(--ink);
+    box-shadow: 0 0 0 1px rgba(20,20,30,.06), 0 1px 2px rgba(20,20,30,.05), 0 8px 22px rgba(20,20,30,.06);
+    transition: transform .3s var(--ease), box-shadow .3s var(--ease);
+  }
+  a.track:hover { transform: translateY(-2px); box-shadow: 0 0 0 1px rgba(20,20,30,.07), 0 2px 4px rgba(20,20,30,.06), 0 14px 30px rgba(20,20,30,.1); }
+  .track-art { position: relative; display: block; margin-bottom: 9px; }
+  .track-cover { width: 100%; aspect-ratio: 4 / 5; border-radius: 10px; object-fit: cover; display: block; background: var(--accent); box-shadow: inset 0 0 0 1px rgba(0,0,0,.06); }
+  /* scene covers: the app's screen laid flat and straight on a photo (--scene) */
+  .track-cover.is-scene { position: relative; overflow: hidden; background: var(--scene) center / cover; }
+  .is-scene img {   /* the whole screen, centred: 78% of the cover's height */
+    position: absolute; left: 50%; top: 50%; height: 78%; width: auto; max-width: none; transform: translate(-50%, -50%);
+    border-radius: 9px; box-shadow: 0 2px 4px rgba(10, 30, 0, .25), 0 14px 28px rgba(10, 30, 0, .35);
+  }
+  .track-cover.is-art { display: grid; place-items: center; background: linear-gradient(135deg, #b9a5e6, var(--accent)); color: #fff; font: italic 400 30px/1 "Instrument Serif", Georgia, serif; }
+  .track-info { display: flex; flex-direction: column; flex: 1; min-width: 0; padding: 0 2px; }
+  .track-title { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; line-height: 1.2; }
+  .track-sub { display: block; margin-top: 2px; font: 500 8.5px/1.4 "Geist Mono", ui-monospace, monospace; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted); margin-bottom: 8px; }
+  .track-bar { display: block; position: relative; height: 3px; margin-top: auto; border-radius: 2px; background: #ecebef; overflow: hidden; }
+  .track-bar i { position: absolute; inset: 0 auto 0 0; width: calc(var(--p) * 100%); border-radius: 2px; background: var(--accent); transition: width 1.6s cubic-bezier(.3, 0, .2, 1); }
+  a.track:hover .track-bar i { width: 100%; }
+  .track-time { display: flex; justify-content: space-between; margin-top: 5px; font: 500 8.5px/1 "Geist Mono", ui-monospace, monospace; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-faint); }
+  .track.is-playing .track-bar i { width: 100%; transition-duration: .9s; }
+  .track.is-playing .eq { opacity: 1; }
+  .track.is-playing .eq i { animation: eq .5s ease-in-out infinite; }
+  .track.is-playing .eq i:nth-child(2) { animation-delay: -.2s; }
+  .track.is-playing .eq i:nth-child(3) { animation-delay: -.35s; }
+  .soon { position: absolute; left: 8px; top: 8px; font: 500 9px/1 "Geist Mono", ui-monospace, monospace; letter-spacing: .08em; text-transform: uppercase; color: #fff; background: rgba(30,20,50,.35); border-radius: 99px; padding: 4px 7px; }
+  /* equaliser next to the title while hovered */
+  .eq { display: inline-flex; align-items: flex-end; gap: 2px; height: 9px; opacity: 0; transition: opacity .2s; }
+  .eq i { width: 2px; height: 100%; border-radius: 1px; background: var(--accent); transform-origin: bottom; transform: scaleY(.3); }
+  a.track:hover .eq { opacity: 1; }
+  a.track:hover .eq i { animation: eq .9s ease-in-out infinite; }
+  a.track:hover .eq i:nth-child(2) { animation-delay: -.3s; }
+  a.track:hover .eq i:nth-child(3) { animation-delay: -.6s; }
+  @keyframes eq { 0%, 100% { transform: scaleY(.3); } 50% { transform: scaleY(1); } }
+  @media (prefers-reduced-motion: reduce) { a.track:hover .eq i { animation: none; transform: scaleY(.7); } .track-bar i { transition: none; } }
 
   footer {
     display: flex; justify-content: space-between; align-items: baseline;
@@ -84,10 +154,11 @@
 
   @media (max-width: 900px) {
     .deck { flex-direction: column; align-items: stretch; gap: 40px; }
-    .tape-col, .copy { width: 100%; max-width: 560px; margin: 0 auto; }
+    .tape-col, .panels { width: 100%; max-width: 560px; margin: 0 auto; }
     .copy p { font-size: 20px; }
     .links { font-size: 16px; }
   }
+  @media (max-width: 520px) { .tracks { grid-template-columns: 1fr 1fr; } }
 </style>
 </head>
 <body>
@@ -96,7 +167,7 @@
   <ul>
     <li><a href="index.html" aria-current="page">Home</a></li>
     <li><a href="projects.html">Projects</a></li>
-    <li><a href="other-work.html">Other Work</a></li>
+    <li><a href="#" aria-disabled="true" title="coming soon">Other Work</a></li>
     <li><a href="#" aria-disabled="true" title="coming soon">Contacts</a></li>
     <li><a href="about.html">About Me</a></li>
   </ul>
@@ -105,9 +176,9 @@
 <main class="deck">
   <div class="tape-col">
     <div class="keys" role="group" aria-label="Tapes">
-      <button type="button" class="key" aria-pressed="true" aria-label="About"></button>
-      <button type="button" class="key" aria-pressed="false" aria-label="Works (coming soon)"></button>
-      <button type="button" class="key" aria-pressed="false" aria-label="Other work (coming soon)"></button>
+      <button type="button" class="key" aria-pressed="true" aria-label="About"><span class="key-side"></span><span class="key-cap"><svg viewBox="0 0 12 9" aria-hidden="true"><path d="M2 0v9l8-4.5z"/></svg>ABOUT</span></button>
+      <button type="button" class="key" aria-pressed="false" aria-label="Projects"><span class="key-side"></span><span class="key-cap"><svg viewBox="0 0 12 9" aria-hidden="true"><path d="M0 0v9l6-4.5zM6 0v9l6-4.5z"/></svg>PROJECTS</span></button>
+      <button type="button" class="key" aria-pressed="false" aria-label="Other work"><span class="key-side"></span><span class="key-cap"><svg viewBox="0 0 12 9" aria-hidden="true"><path d="M1 6h10v2H1zM6 0l5 5H1z"/></svg>OTHER</span></button>
     </div>
     <div class="tape" id="tape">
       <img class="tape-fallback" src="assets/home3/cassette-about.svg" alt="A clear cassette labelled About me, side A, vol. 01">
@@ -115,8 +186,8 @@
     </div>
   </div>
 
-  <section class="copy" aria-labelledby="about-h">
-    <h1 id="about-h">About</h1>
+  <div class="panels" id="panels">
+  <section class="panel copy" data-tape="about" aria-label="About">
     <p>hi! I’m <span class="name">Dani Yeyang (yeah-young) Tian</span>, a product designer who transforms complex, real-world systems into clear and intuitive experiences. currently @ UMich MSI.</p>
     <!-- TODO: real link for CV (Linkedin / Email are the same as on Home) -->
     <ul class="links">
@@ -125,6 +196,43 @@
       <li><a href="mailto:yeyangtian873@gmail.com">Email</a></li>
     </ul>
   </section>
+
+  <section class="panel" data-tape="works" aria-label="Works" hidden>
+    <ul class="tracks">
+      <li><a class="track" href="projects.html?p=verdure" style="--accent:#6fd197">
+        <span class="track-art"><span class="track-cover is-scene" style="--scene: #5d7a2a url(assets/home3/verdure-grass.jpg)" aria-hidden="true"><img src="assets/home3/verdure-screen.png" alt=""></span></span>
+        <span class="track-info">
+          <span class="track-title">Verdure <span class="eq" aria-hidden="true"><i></i><i></i><i></i></span></span>
+          <span class="track-sub">Physical product · UX/UI · Complex system</span>
+          <span class="track-bar" style="--p:.62"><i></i></span>
+          <span class="track-time"><span>Track 01</span></span>
+        </span>
+      </a></li>
+      <li><a class="track" href="projects.html?p=clicket" style="--accent:#ff6f6f">
+        <span class="track-art"><span class="track-cover is-scene" style="--scene: #eee url(assets/home3/clicket-cameras.jpg)" aria-hidden="true"><img src="assets/home3/clicket-screen.png?v=2" alt=""></span></span>
+        <span class="track-info">
+          <span class="track-title">Clicket <span class="eq" aria-hidden="true"><i></i><i></i><i></i></span></span>
+          <span class="track-sub">Physical product · App · Service</span>
+          <span class="track-bar" style="--p:.38"><i></i></span>
+          <span class="track-time"><span>Track 02</span></span>
+        </span>
+      </a></li>
+      <li><div class="track is-soon" style="--accent:#8a6cc0" aria-label="Microsoft Fabric, coming up">
+        <span class="track-art"><span class="track-cover is-art" aria-hidden="true">Fabric</span><span class="soon">Coming up</span></span>
+        <span class="track-info">
+          <span class="track-title">Microsoft Fabric <span class="eq" aria-hidden="true"><i></i><i></i><i></i></span></span>
+          <span class="track-sub">Client project · AI · UX research</span>
+          <span class="track-bar" style="--p:0"><i></i></span>
+          <span class="track-time"><span>Track 03</span></span>
+        </span>
+      </div></li>
+    </ul>
+  </section>
+
+  <section class="panel copy" data-tape="other" aria-label="Other work" hidden>
+    <p>come see my previous work</p>
+  </section>
+  </div>
 </main>
 
 <footer>
@@ -134,12 +242,51 @@
 
 <script src="js/nav.js?v=12"></script>
 <script>
-  // Keys: 1 is About (this tape). 2 and 3 press and spring back until their tapes are built.
-  document.querySelectorAll(".key").forEach((k, i) => k.addEventListener("click", () => {
-    if (i === 0) return;
-    k.classList.add("is-tapping");
-    setTimeout(() => k.classList.remove("is-tapping"), 160);
-  }));
+  // give the 3D cassette 8 s; if it hasn't appeared by then, show the flat one
+  setTimeout(() => { const t = document.getElementById("tape"); if (!t.classList.contains("is-3d")) t.classList.add("no-3d"); }, 8000);
+</script>
+<script>
+  // Keys: each loads a tape. The pressed key latches down, the right side swaps panels and
+  // the cassette (js/home3-cassette.js, listening for "tape") reprints its label and spins on.
+  // A key without a tape (none right now) presses and springs back.
+  (() => {
+    const TAPES = ["about", "works", "other"];
+    const keys = [...document.querySelectorAll(".key")];
+    const panels = [...document.querySelectorAll(".panel")];
+    let current = "about";
+    keys.forEach((k, i) => k.addEventListener("click", () => {
+      const tape = TAPES[i];
+      if (!tape) {
+        k.classList.add("is-tapping");
+        setTimeout(() => k.classList.remove("is-tapping"), 160);
+        return;
+      }
+      if (tape === current) return;
+      current = tape;
+      keys.forEach((o, j) => o.setAttribute("aria-pressed", TAPES[j] === tape));
+      panels.forEach(p => { p.hidden = p.dataset.tape !== tape; });
+      document.body.dataset.tape = tape;             // for the cassette if it loads after this
+      window.dispatchEvent(new CustomEvent("tape", { detail: tape }));
+    }));
+
+    // Works: pointing at a card winds the cassette to that track; clicking one plays it for a
+    // moment (the button turns to pause, the equaliser runs) before the case study opens
+    const tracks = [...document.querySelectorAll('[data-tape="works"] .track')];
+    const cue = i => window.dispatchEvent(new CustomEvent("track", { detail: i }));
+    tracks.forEach((card, i) => {
+      card.addEventListener("pointerenter", () => cue(i));
+      card.addEventListener("focus", () => cue(i));
+      if (card.tagName !== "A") return;
+      card.addEventListener("click", e => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        e.preventDefault();
+        cue(i);
+        card.classList.add("is-playing");
+        setTimeout(() => { location.href = card.href; }, 900);
+      });
+    });
+    addEventListener("pageshow", () => tracks.forEach(c => c.classList.remove("is-playing")));
+  })();
 </script>
 <script type="importmap">
 { "imports": {
@@ -147,6 +294,6 @@
   "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
 } }
 </script>
-<script type="module" src="js/home3-cassette.js?v=20"></script>
+<script type="module" src="js/home3-cassette.js?v=70"></script>
 </body>
 </html>
